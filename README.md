@@ -13,17 +13,21 @@ Two-way Slack chat for your Claude Code CLI session. DM the bot or @mention it i
 - Claude Code installed and logged in (`claude` on PATH, `~/.claude/` populated)
 - A Slack workspace where you can install apps
 
-## Setup
-
-### 1. Clone and install
+## Quick start
 
 ```bash
 git clone <this-repo> claude-slack-bridge
 cd claude-slack-bridge
 npm install
+npm run setup
+npm start
 ```
 
-### 2. Create the Slack app from the manifest
+`npm run setup` copies the manifest to your clipboard, walks you through creating the Slack app, prompts for both tokens (validating each against the Slack API), and writes `.env`. If you'd rather wire it up by hand, follow the manual setup below.
+
+## Manual setup
+
+### 1. Create the Slack app from the manifest
 
 1. Go to **https://api.slack.com/apps** → **Create New App** → **From an app manifest**
 2. Pick your workspace
@@ -32,7 +36,7 @@ npm install
 
 The manifest pre-configures Socket Mode + all required scopes.
 
-### 3. Get the two tokens
+### 2. Get the two tokens
 
 **Bot token** (`xoxb-...`):
 - Left sidebar → **OAuth & Permissions**
@@ -45,7 +49,7 @@ The manifest pre-configures Socket Mode + all required scopes.
 - Name it (e.g. `socket`), add the `connections:write` scope → Generate
 - Copy the token
 
-### 4. Configure `.env`
+### 3. Configure `.env`
 
 ```bash
 cp .env.example .env
@@ -62,7 +66,7 @@ Optional:
 - `ALLOWED_CHANNELS=C0123ABCD,C0456EFGH` — restrict the bot to specific channel IDs
 - `CLAUDE_CWD=/path/to/project` — working directory for the Claude Code session (defaults to current directory)
 
-### 5. Invite the bot
+### 4. Invite the bot
 
 In any Slack channel you want it to listen in:
 
@@ -72,7 +76,7 @@ In any Slack channel you want it to listen in:
 
 For DMs, just open a DM with the bot — no invite needed.
 
-### 6. Run
+### 5. Run
 
 ```bash
 npm start

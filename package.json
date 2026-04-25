@@ -4,6 +4,7 @@
   "description": "Two-way Slack chat for Claude Code CLI sessions",
   "type": "module",
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "start": "tsx src/bridge.ts",
     "dev": "tsx watch src/bridge.ts"
   },
