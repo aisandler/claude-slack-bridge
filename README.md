@@ -157,6 +157,7 @@ The bridge is a long-lived process. Options:
 | Bot replies twice | You added scopes/events outside the manifest — verify against `slack-app-manifest.yaml` |
 | Replies are empty | The agent ran tools but produced no text — check the bridge logs for errors |
 | Bot ignores you | Your Slack user ID isn't in `ALLOWED_USERS`. Find your ID (avatar → Profile → ⋯ → Copy member ID) and add it to `.env`, then restart. |
+| Can't DM the bot ("messaging is turned off") | Messages Tab is disabled. The current manifest enables it; if you installed under an older manifest, in the Slack app dashboard go to **App Home** → **Show Tabs** → enable **Messages Tab** and check "Allow users to send Slash commands and messages". |
 | Agent operating on the wrong directory | Check the `cwd=...` line in the startup logs. Override with `npm start -- /correct/path` for one launch, or `npm run point -- /correct/path` to update `.env`. |
 | Agent refuses to edit/run commands | You're in safe mode — set `MODE=trusted` in `.env` and restart. Read the warning before you do. |
 
