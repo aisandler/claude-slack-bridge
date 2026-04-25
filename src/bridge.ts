@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { readFileSync, writeFileSync, renameSync } from "node:fs"
+import { readFileSync, writeFileSync, renameSync, statSync } from "node:fs"
 import { resolve } from "node:path"
 // NOTE: must be `import { App } from "@slack/bolt"`. The default-import form
 // (`import bolt from "@slack/bolt"; const { App } = bolt`) type-checks but
@@ -25,7 +25,24 @@ const ALLOWED_USERS = (process.env.ALLOWED_USERS ?? "")
   .map(s => s.trim())
   .filter(Boolean)
 
-const CWD = process.env.CLAUDE_CWD ?? process.cwd()
+// Resolution order: positional CLI arg → CLAUDE_CWD env → process.cwd().
+// The CLI arg makes "point this bridge at another project" a one-liner:
+// `npm start -- ~/projects/foo`.
+const CWD = (() => {
+  const argPath = process.argv[2]
+  const raw = argPath ?? process.env.CLAUDE_CWD ?? process.cwd()
+  const resolved = resolve(raw)
+  try {
+    if (!statSync(resolved).isDirectory()) {
+      console.error(`[bridge] CWD ${resolved} exists but is not a directory.`)
+      process.exit(1)
+    }
+  } catch (e: any) {
+    console.error(`[bridge] CWD ${resolved} is not accessible: ${e?.message ?? e}`)
+    process.exit(1)
+  }
+  return resolved
+})()
 
 // Safe mode is the default. Set MODE=trusted (or UNSAFE=1) to allow Bash/Edit/Write.
 const TRUSTED = process.env.MODE === "trusted" || process.env.UNSAFE === "1"

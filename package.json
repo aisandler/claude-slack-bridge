@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup.mjs",
+    "point": "node scripts/point.mjs",
     "start": "tsx src/bridge.ts",
     "dev": "tsx watch src/bridge.ts"
   },

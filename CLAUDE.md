@@ -6,7 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `npm install` — install deps
 - `npm run setup` — interactive wizard: copies the Slack manifest to clipboard, prompts for bot + app tokens (validates each via `auth.test` and `apps.connections.open`), writes `.env`
-- `npm start` — run the bridge (`tsx src/bridge.ts`)
+- `npm run point -- /path/to/project` — rewrite `CLAUDE_CWD` in `.env` to point the bridge at a different project (persistent across restarts)
+- `npm start` — run the bridge (`tsx src/bridge.ts`). Accepts an optional positional arg overriding `CLAUDE_CWD` for that launch only: `npm start -- /path/to/project`
 - `npm run dev` — same with `tsx watch`
 - `npx tsc --noEmit` — type-check only (the project never emits JS; `tsx` runs TS directly)
 

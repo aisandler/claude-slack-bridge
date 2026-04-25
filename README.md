@@ -26,6 +26,17 @@ npm run setup
 npm start
 ```
 
+To point the bridge at a project other than the bridge repo itself, either:
+
+```bash
+# Per-launch override (positional arg):
+npm start -- ~/projects/your-other-project
+
+# Persistent (rewrites CLAUDE_CWD in .env):
+npm run point -- ~/projects/your-other-project
+npm start
+```
+
 `npm run setup` copies the manifest to your clipboard, walks you through creating the Slack app, prompts for both tokens (validating each against the Slack API), and writes `.env`. If you'd rather wire it up by hand, follow the manual setup below.
 
 **Three setup paths** — see [INSTALL.md](./INSTALL.md) for a comparison. TL;DR:
@@ -145,6 +156,7 @@ The bridge is a long-lived process. Options:
 | Bot replies twice | You added scopes/events outside the manifest — verify against `slack-app-manifest.yaml` |
 | Replies are empty | The agent ran tools but produced no text — check the bridge logs for errors |
 | Bot ignores you | Your Slack user ID isn't in `ALLOWED_USERS`. Find your ID (avatar → Profile → ⋯ → Copy member ID) and add it to `.env`, then restart. |
+| Agent operating on the wrong directory | Check the `cwd=...` line in the startup logs. Override with `npm start -- /correct/path` for one launch, or `npm run point -- /correct/path` to update `.env`. |
 | Agent refuses to edit/run commands | You're in safe mode — set `MODE=trusted` in `.env` and restart. Read the warning before you do. |
 
 ## License
