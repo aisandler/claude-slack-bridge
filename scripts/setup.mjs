@@ -124,6 +124,12 @@ async function main() {
   const cwdAns = (await ask(`  Working directory for Claude [${here}]: `)).trim()
   const cwd = cwdAns || here
 
+  console.log("  Restrict who can talk to the bot — strongly recommended.")
+  console.log("  In Slack: avatar → Profile → ⋯ → Copy member ID. Comma-separate multiple.")
+  const allowedUsers = (
+    await ask("  Allowed Slack user IDs (blank = anyone in workspace): ")
+  ).trim()
+
   const allowed = (
     await ask("  Restrict to specific channel IDs (comma-separated, blank for any): ")
   ).trim()
@@ -134,6 +140,7 @@ async function main() {
     `SLACK_APP_TOKEN=${appToken}`,
   ]
   if (cwd !== here) lines.push(`CLAUDE_CWD=${cwd}`)
+  if (allowedUsers) lines.push(`ALLOWED_USERS=${allowedUsers}`)
   if (allowed) lines.push(`ALLOWED_CHANNELS=${allowed}`)
   await writeFile(".env", lines.join("\n") + "\n", { mode: 0o600 })
   console.log("\n  ✓ Wrote .env (mode 600)")

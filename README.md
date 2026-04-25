@@ -4,8 +4,11 @@ Two-way Slack chat for your Claude Code CLI session. DM the bot or @mention it i
 
 - No Pipedream, no public webhook, no ngrok — uses Slack **Socket Mode**
 - No Anthropic API key required if you're already logged into Claude Code (the [Claude Agent SDK](https://docs.claude.com/en/api/agent-sdk) inherits your CLI auth)
-- One persistent session per Slack channel/DM — context carries across messages
+- One persistent session per Slack channel/DM — context carries across messages and survives bridge restarts (stored in `.sessions.json`)
 - Concurrent messages in the same channel are queued and processed in order
+- **Safe mode by default** — Bash, Edit, Write, and NotebookEdit are blocked unless you opt in
+- **`!cancel` and `!reset`** — abort the current turn or clear a channel's session from Slack
+- **Markdown is rendered as Slack mrkdwn** — bold, italic, headers, links, lists, and code fences come through correctly
 
 ## Requirements
 
@@ -24,6 +27,12 @@ npm start
 ```
 
 `npm run setup` copies the manifest to your clipboard, walks you through creating the Slack app, prompts for both tokens (validating each against the Slack API), and writes `.env`. If you'd rather wire it up by hand, follow the manual setup below.
+
+**Three setup paths** — see [INSTALL.md](./INSTALL.md) for a comparison. TL;DR:
+
+- **Browser-driven** (`/install-slack-bridge` in Claude Code) — fully guided, mostly hands-off. Requires the `claude-in-chrome` extension.
+- **Wizard** (`npm run setup`) — copy/paste two tokens, validates them, writes `.env`. What's shown above.
+- **Manual** — see "Manual setup" below.
 
 ## Manual setup
 
@@ -63,8 +72,12 @@ SLACK_APP_TOKEN=xapp-...
 ```
 
 Optional:
+- `ALLOWED_USERS=U0123ABCD,U0456EFGH` — restrict who can talk to the bot, by Slack user ID. **Strongly recommended** — without it, anyone in the workspace can DM the bot and read files via the agent's read tools. (To find your user ID: in Slack, click your avatar → Profile → ⋯ → Copy member ID.)
 - `ALLOWED_CHANNELS=C0123ABCD,C0456EFGH` — restrict the bot to specific channel IDs
 - `CLAUDE_CWD=/path/to/project` — working directory for the Claude Code session (defaults to current directory)
+- `MODE=trusted` — allow Bash/Edit/Write/NotebookEdit. Default is safe mode (those tools blocked).
+- `AGENT_TIMEOUT_MS=300000` — per-turn timeout. Default 5 minutes; abort fires `!cancel` automatically.
+- `SESSIONS_FILE=/path/to/sessions.json` — where to persist per-channel session ids. Default `.sessions.json` in cwd.
 
 ### 4. Invite the bot
 
@@ -82,17 +95,25 @@ For DMs, just open a DM with the bot — no invite needed.
 npm start
 ```
 
-You should see:
+You should see something like:
 
 ```
 ⚡ claude-slack-bridge running in Socket Mode (cwd=/path/to/project)
+   mode: safe (Bash/Edit/Write blocked)
+   per-turn timeout: 300s
+   allowed users: U0123ABCD
 ```
+
+If `ALLOWED_USERS` is empty you'll get a warning instead — set it before letting anyone else into the workspace.
 
 ## Usage
 
 - **DM the bot** — every message is routed into the session
 - **@mention in a channel** — `@Claude Code can you summarize the latest commit?`
+- **Group DMs (mpim)** — bot only responds when explicitly @mentioned, so it won't talk over a normal group conversation
 - **Replies appear in-thread** — the bot replies to the originating message's thread
+- **`!cancel`** — abort the in-flight turn for this channel
+- **`!reset`** — drop the session for this channel (next message starts a fresh one); also aborts an in-flight turn
 
 The bot adds a 👀 reaction the moment it receives your message, so you know it's working.
 
@@ -100,17 +121,18 @@ The bot adds a 👀 reaction the moment it receives your message, so you know it
 
 The bridge is a long-lived process. Options:
 
-- **macOS LaunchAgent**: see `examples/launchd.plist` *(not included — write your own)*
 - **pm2**: `npm install -g pm2 && pm2 start "npm start" --name claude-slack-bridge`
 - **Docker**: standard Node 20 image, copy repo, `npm ci`, `CMD ["npm","start"]`
+- **macOS LaunchAgent / systemd**: write a unit pointing at `npm --prefix /path/to/repo start`
 
 ## Limits and gotchas
 
 - **One workspace per bridge instance.** Run multiple instances for multiple workspaces.
 - **One session per channel.** Messages while the agent is thinking are queued and drained when it finishes.
-- **No tool approval prompts.** The Claude Agent SDK runs autonomously — make sure the working directory is one you trust the agent to operate in.
+- **Safe mode is the default.** Bash, Edit, Write, and NotebookEdit are blocked. Read/Grep/Glob/WebFetch/WebSearch still work, so the bot can still answer questions about your repo. Set `MODE=trusted` to enable mutating tools — and only do that if you trust everyone who can DM or @mention the bot.
 - **First reply may be slow** if the SDK has to spin up; subsequent messages reuse the session.
-- **Reset a channel's session**: stop the bridge, restart it. (Sessions live in memory only.)
+- **Reset a channel's session** with `!reset` in the channel/DM. Sessions are persisted to `.sessions.json` so a restart preserves context; if the SDK rejects a stale session id (e.g. after an SDK upgrade), the bridge transparently retries with a fresh one. To wipe everything, stop the bridge and delete `.sessions.json`.
+- **Cancel a runaway turn** with `!cancel`. Turns also auto-abort after `AGENT_TIMEOUT_MS` (default 5 minutes).
 
 ## Troubleshooting
 
@@ -122,6 +144,8 @@ The bridge is a long-lived process. Options:
 | Socket Mode connect fails | App-level token missing `connections:write` — regenerate with that scope |
 | Bot replies twice | You added scopes/events outside the manifest — verify against `slack-app-manifest.yaml` |
 | Replies are empty | The agent ran tools but produced no text — check the bridge logs for errors |
+| Bot ignores you | Your Slack user ID isn't in `ALLOWED_USERS`. Find your ID (avatar → Profile → ⋯ → Copy member ID) and add it to `.env`, then restart. |
+| Agent refuses to edit/run commands | You're in safe mode — set `MODE=trusted` in `.env` and restart. Read the warning before you do. |
 
 ## License
 

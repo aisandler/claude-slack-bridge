@@ -4,3 +4,5 @@ node_modules/
 dist/
 *.log
 .DS_Store
+.sessions.json
+.sessions.json.tmp
