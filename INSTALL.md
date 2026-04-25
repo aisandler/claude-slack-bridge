@@ -29,13 +29,14 @@ A Claude Code skill walks the browser through the deterministic parts (manifest 
    claude
    ```
 2. Tell it: `/install-slack-bridge` (or just: *"set up the slack bridge"*).
-3. Claude will open `https://api.slack.com/apps` in a new Chrome tab and ask you to **log in to Slack and tell it "ready"**. Do that.
-4. Claude clicks through `Create New App → From a manifest`. If you have multiple Slack workspaces, Claude will **stop and ask you which one** to install into.
-5. Claude pastes the manifest, clicks Create, navigates to OAuth & Permissions, and clicks `Install to Workspace`.
-6. Slack shows a permission consent page. **You** click `Allow` — Claude won't click this for you. Tell it you've clicked Allow.
-7. Claude reads the bot token, navigates to Basic Information, generates the app-level token (`connections:write` scope), reads that one too, and validates both against Slack's API.
-8. Claude asks for your Slack user ID (`avatar → Profile → ⋯ → Copy member ID`) so it can populate `ALLOWED_USERS`. **Strongly recommended** — without it, anyone in your workspace can DM the bot.
-9. Claude writes `.env` (mode 0600) and tells you the next command: `npm start`.
+3. Claude will ask what to name the bot (default `Claude Code`). Pick something else if a workspace already has a "Claude Code" app, or you want a project-specific identity.
+4. Claude will open `https://api.slack.com/apps` in a new Chrome tab and ask you to **log in to Slack and tell it "ready"**. Do that.
+5. Claude clicks through `Create New App → From a manifest`. If you have multiple Slack workspaces, Claude will **stop and ask you which one** to install into.
+6. Claude pastes the manifest (with the bot name you chose), clicks Create, navigates to OAuth & Permissions, and clicks `Install to Workspace`.
+7. Slack shows a permission consent page. **You** click `Allow` — Claude won't click this for you. Tell it you've clicked Allow.
+8. Claude reads the bot token, navigates to Basic Information, generates the app-level token (`connections:write` scope), reads that one too, and validates both against Slack's API.
+9. Claude asks for your Slack user ID (`avatar → Profile → ⋯ → Copy member ID`) so it can populate `ALLOWED_USERS`. **Strongly recommended** — without it, anyone in your workspace can DM the bot.
+10. Claude writes `.env` (mode 0600) and tells you the next command: `npm start`.
 
 ### What Claude will NOT do
 

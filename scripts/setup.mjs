@@ -25,6 +25,18 @@ async function copyToClipboard(text) {
   })
 }
 
+// Substitute the bot name in the manifest's two display fields. We rewrite
+// only the literal "Claude Code" defaults so this is a no-op when the user
+// keeps the default. JSON.stringify quotes/escapes for safety against names
+// containing YAML-significant characters (colons, hashes, leading dashes).
+function customizeManifest(yaml, botName) {
+  if (botName === "Claude Code") return yaml
+  const quoted = JSON.stringify(botName)
+  return yaml
+    .replace(/^(\s*name:\s+)Claude Code\s*$/m, `$1${quoted}`)
+    .replace(/^(\s*display_name:\s+)Claude Code\s*$/m, `$1${quoted}`)
+}
+
 async function fileExists(p) {
   try {
     await access(p)
@@ -64,7 +76,11 @@ async function main() {
 
   // Step 1 — manifest
   console.log("STEP 1 — Create the Slack app from the manifest")
-  const manifest = await readFile("slack-app-manifest.yaml", "utf8")
+  const botName = (await ask("  Bot display name [Claude Code]: ")).trim() || "Claude Code"
+  const manifest = customizeManifest(
+    await readFile("slack-app-manifest.yaml", "utf8"),
+    botName,
+  )
   const copied = await copyToClipboard(manifest)
   if (copied) {
     console.log("  ✓ Manifest copied to your clipboard")

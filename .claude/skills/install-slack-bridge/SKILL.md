@@ -26,6 +26,7 @@ You'll also use `Read` (manifest), `Bash` (token validation, writing `.env`), an
 
 - Confirm cwd is the `claude-slack-bridge` repo (look for `slack-app-manifest.yaml` and `package.json` with `"name": "claude-slack-bridge"`).
 - Read `slack-app-manifest.yaml` so you have the YAML body in memory.
+- **Ask the user what they want the bot named** (default: `Claude Code`). If they pick something else, do a literal substitution on the two `Claude Code` occurrences in the manifest — one under `display_information.name`, one under `features.bot_user.display_name`. Quote names with YAML-special chars by wrapping them in double quotes. Example: `display_name: "My Bot"`. Common reasons to rename: another app named "Claude Code" already exists in the workspace, or the user wants a project-specific identity.
 - Check whether `.env` already exists. If it does, ask the user whether to overwrite before continuing.
 
 ### 2. Hand off login to the user

@@ -52,7 +52,8 @@ npm start
 1. Go to **https://api.slack.com/apps** → **Create New App** → **From an app manifest**
 2. Pick your workspace
 3. Open `slack-app-manifest.yaml` from this repo, copy its contents, and paste into the manifest editor
-4. Review → **Create**
+4. (Optional) Edit the `name` and `display_name` fields if you want a custom bot name — both default to `Claude Code`. Useful if a workspace already has an app by that name, or you want a project-specific identity. The `npm run setup` wizard prompts for this automatically.
+5. Review → **Create**
 
 The manifest pre-configures Socket Mode + all required scopes.
 
